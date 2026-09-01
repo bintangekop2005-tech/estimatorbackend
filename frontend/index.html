@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>OpenAI Token Estimator</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 60px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, .06);
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 12px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #111827;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .number {
+            font-size: 40px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .model {
+            color: #666;
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <div class="card">
+
+            <h1>OpenAI Token Estimator</h1>
+
+            <p class="model">
+                Model: gpt-4o-mini
+            </p>
+
+
+            <label>
+                <strong>Masukkan Prompt</strong>
+            </label>
+
+            <textarea id="prompt" placeholder="Jelaskan apa itu Product Management">
+        </textarea>
+
+
+            <button onclick="estimateToken()">
+                Estimate Token
+            </button>
+
+
+            <div class="result">
+
+                <div>
+                    Estimated Input Tokens
+                </div>
+
+                <div id="tokenResult" class="number">
+
+                    0
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        async function estimateToken() {
+
+            const prompt =
+                document.getElementById("prompt").value;
+
+
+            if (!prompt.trim()) {
+
+                alert("Masukkan prompt terlebih dahulu.");
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "http://127.0.0.1:8000/estimate",
+                        {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                prompt: prompt
+                            })
+
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!data.success) {
+
+                    alert(data.message);
+
+                    return;
+
+                }
+
+
+                document.getElementById(
+                    "tokenResult"
+                ).innerText =
+                    data.estimated_input_tokens;
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Backend tidak dapat diakses."
+                );
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>
