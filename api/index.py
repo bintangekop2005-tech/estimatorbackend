@@ -31,7 +31,7 @@ app.add_middleware(
 
 MODEL = "gemini-3.5-flash"
 
-TOKEN_LIMIT = 300
+TOKEN_LIMIT = 1000
 
 PINECONE_INDEX_NAME = "selfai1"
 
