@@ -50,15 +50,15 @@ if not PINECONE_API_KEY:
 # CONFIGURATION
 # ============================================================
 
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-3.5-flash"
 
 TOKEN_LIMIT = 100
 
-PINECONE_INDEX_NAME = "nama-index-kamu"
+PINECONE_INDEX_NAME = "selfai1"
 
-PINECONE_NAMESPACE = ""
+PINECONE_NAMESPACE = "_default_"
 
-PINECONE_TOP_K = 3
+PINECONE_TOP_K = 10
 
 
 # ============================================================
