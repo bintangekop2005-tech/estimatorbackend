@@ -36,7 +36,7 @@ if not PINECONE_API_KEY:
 # ============================================================
 
 # Gemini
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-3.5-flash"
 
 
 # Token quota setiap user
@@ -44,11 +44,11 @@ USER_TOKEN_LIMIT = 100
 
 
 # Pinecone
-PINECONE_INDEX_NAME = "nama-index-kamu"
+PINECONE_INDEX_NAME = "selfai1"
 
-PINECONE_TOP_K = 3
+PINECONE_TOP_K = 10
 
-PINECONE_NAMESPACE = ""
+PINECONE_NAMESPACE = "__default__"
 
 
 # ============================================================
