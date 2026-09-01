@@ -1,44 +1,28 @@
 import os
-from dotenv import load_dotenv
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from pinecone import Pinecone
 import google.generativeai as genai
+from pinecone import Pinecone
 
 
 # ============================================================
-# LOAD ENVIRONMENT
+# FASTAPI
 # ============================================================
 
-load_dotenv()
-
-
-GEMINI_API_KEY = os.getenv(
-    "GEMINI_API_KEY"
-)
-
-PINECONE_API_KEY = os.getenv(
-    "PINECONE_API_KEY"
+app = FastAPI(
+    title="Gemini Token Tracker"
 )
 
 
-# ============================================================
-# VALIDATE API KEY
-# ============================================================
-
-if not GEMINI_API_KEY:
-
-    raise RuntimeError(
-        "GEMINI_API_KEY belum ditemukan."
-    )
-
-
-if not PINECONE_API_KEY:
-
-    raise RuntimeError(
-        "PINECONE_API_KEY belum ditemukan."
-    )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 
 # ============================================================
@@ -57,33 +41,36 @@ PINECONE_TOP_K = 10
 
 
 # ============================================================
-# FASTAPI
+# API KEYS
 # ============================================================
 
-app = FastAPI(
-    title="Gemini Token Tracker"
+GEMINI_API_KEY = os.getenv(
+    "GEMINI_API_KEY"
+)
+
+PINECONE_API_KEY = os.getenv(
+    "PINECONE_API_KEY"
 )
 
 
-app.add_middleware(
-    CORSMiddleware,
+if not GEMINI_API_KEY:
 
-    allow_origins=["*"],
-
-    allow_credentials=True,
-
-    allow_methods=["*"],
-
-    allow_headers=["*"]
-)
+    raise RuntimeError(
+        "GEMINI_API_KEY belum ditemukan."
+    )
 
 
 # ============================================================
-# GEMINI
+# GEMINI CONFIGURATION
 # ============================================================
 
-gemini = genai.Client(
+genai.configure(
     api_key=GEMINI_API_KEY
+)
+
+
+model = genai.GenerativeModel(
+    MODEL
 )
 
 
@@ -91,29 +78,39 @@ gemini = genai.Client(
 # PINECONE
 # ============================================================
 
-pinecone = Pinecone(
-    api_key=PINECONE_API_KEY
-)
+pinecone = None
+index = None
 
 
-index = pinecone.Index(
-    PINECONE_INDEX_NAME
-)
+if PINECONE_API_KEY:
+
+    try:
+
+        pinecone = Pinecone(
+            api_key=PINECONE_API_KEY
+        )
+
+        index = pinecone.Index(
+            PINECONE_INDEX_NAME
+        )
+
+    except Exception as error:
+
+        print(
+            "Pinecone initialization error:",
+            error
+        )
 
 
 # ============================================================
-# DEMO USER TOKEN STORAGE
+# DEMO TOKEN DATABASE
 # ============================================================
 
-# IMPORTANT:
+# Hanya untuk DEMO.
 #
-# Ini hanya untuk DEMO.
-#
-# Data akan hilang ketika serverless
-# function di-restart.
-#
-# Production:
-# gunakan Redis / PostgreSQL / Supabase.
+# Vercel Serverless bersifat ephemeral.
+# Untuk production gunakan database seperti
+# PostgreSQL / Supabase / Redis.
 
 user_usage = {}
 
@@ -162,9 +159,13 @@ def root():
 
     return {
 
-        "status": "online",
+        "status": "ok",
 
-        "model": MODEL,
+        "message":
+            "Gemini Token Tracker API",
+
+        "model":
+            MODEL,
 
         "token_limit":
             TOKEN_LIMIT
@@ -173,7 +174,7 @@ def root():
 
 
 # ============================================================
-# TEST ENDPOINT
+# TEST
 # ============================================================
 
 @app.get("/api/test")
@@ -184,13 +185,13 @@ def test():
         "status": "ok",
 
         "message":
-            "FastAPI berjalan di Vercel."
+            "FastAPI berhasil berjalan."
 
     }
 
 
 # ============================================================
-# QUOTA ENDPOINT
+# GET USER QUOTA
 # ============================================================
 
 @app.get(
@@ -205,11 +206,8 @@ def quota(
     )
 
     remaining = max(
-
         TOKEN_LIMIT - used,
-
         0
-
     )
 
     return {
@@ -237,124 +235,100 @@ def search_pinecone(
     query: str
 ):
 
+    if index is None:
+
+        return ""
+
+
     try:
 
+        # ----------------------------------------------------
+        # Catatan:
+        # Format query dapat berbeda tergantung konfigurasi
+        # index Pinecone kamu.
+        # ----------------------------------------------------
+
         result = index.search(
-
             namespace=PINECONE_NAMESPACE,
-
             query={
-
                 "inputs": {
-
-                    "text":
-                        query
-
+                    "text": query
                 },
-
-                "top_k":
-                    PINECONE_TOP_K
-
+                "top_k": PINECONE_TOP_K
             },
-
             fields=[
-
                 "chunk_text",
-
                 "text",
-
                 "content",
-
                 "source",
-
                 "title"
-
             ]
-
         )
 
-        return result
+
+        contexts = []
+
+
+        try:
+
+            hits = (
+                result["result"]["hits"]
+            )
+
+        except Exception:
+
+            return ""
+
+
+        for hit in hits:
+
+            fields = hit.get(
+                "fields",
+                {}
+            )
+
+
+            text = (
+
+                fields.get(
+                    "chunk_text"
+                )
+
+                or
+
+                fields.get(
+                    "text"
+                )
+
+                or
+
+                fields.get(
+                    "content"
+                )
+
+            )
+
+
+            if text:
+
+                contexts.append(
+                    str(text)
+                )
+
+
+        return "\n\n".join(
+            contexts
+        )
+
 
     except Exception as error:
 
         print(
-            "Pinecone error:",
+            "Pinecone search error:",
             error
         )
 
-        return None
-
-
-# ============================================================
-# EXTRACT CONTEXT
-# ============================================================
-
-def extract_context(
-    result
-):
-
-    if not result:
-
         return ""
-
-
-    contexts = []
-
-
-    try:
-
-        hits = (
-            result[
-                "result"
-            ][
-                "hits"
-            ]
-        )
-
-    except Exception:
-
-        return ""
-
-
-    for hit in hits:
-
-        fields = hit.get(
-            "fields",
-            {}
-        )
-
-
-        text = (
-
-            fields.get(
-                "chunk_text"
-            )
-
-            or
-
-            fields.get(
-                "text"
-            )
-
-            or
-
-            fields.get(
-                "content"
-            )
-
-        )
-
-
-        if text:
-
-            contexts.append(
-                str(text)
-            )
-
-
-    return "\n\n".join(
-        contexts
-    )
 
 
 # ============================================================
@@ -366,55 +340,78 @@ def build_prompt(
     context: str
 ):
 
+    if context:
+
+        return f"""
+Anda adalah AI assistant.
+
+Gunakan konteks berikut untuk
+menjawab pertanyaan user.
+
+KONTEKS:
+{context}
+
+PERTANYAAN:
+{message}
+
+ATURAN:
+- Jawab langsung.
+- Jangan mengarang.
+- Gunakan informasi paling relevan.
+- Hindari pembukaan yang tidak diperlukan.
+- Jangan mengulang pertanyaan.
+- Jika ruang jawaban terbatas, prioritaskan informasi utama.
+
+JAWABAN:
+""".strip()
+
+
     return f"""
 Anda adalah AI assistant.
 
-Jawab pertanyaan berdasarkan
-konteks yang tersedia.
+PERTANYAAN:
+{message}
 
 ATURAN:
-
 - Jawab langsung.
 - Jangan mengarang.
-- Prioritaskan informasi penting.
-- Jangan menggunakan pembukaan yang tidak perlu.
-- Gunakan jawaban seefisien mungkin.
-- Jika batas output kecil, persingkat jawaban.
-- Jangan mengulang pertanyaan user.
-
-KONTEKS:
-
-{context}
-
-PERTANYAAN USER:
-
-{message}
+- Gunakan jawaban yang ringkas.
+- Hindari pembukaan yang tidak diperlukan.
+- Jangan mengulang pertanyaan.
+- Jika ruang jawaban terbatas, prioritaskan informasi utama.
 
 JAWABAN:
 """.strip()
 
 
 # ============================================================
-# COUNT TOKENS
+# ESTIMATE INPUT TOKEN
 # ============================================================
 
 def estimate_input_tokens(
     prompt: str
 ):
 
-    result = (
-        gemini.models.count_tokens(
+    try:
 
-            model=MODEL,
-
-            contents=prompt
-
+        result = model.count_tokens(
+            prompt
         )
-    )
 
-    return int(
-        result.total_tokens
-    )
+        return int(
+            result.total_tokens
+        )
+
+    except Exception as error:
+
+        print(
+            "Token estimation error:",
+            error
+        )
+
+        raise RuntimeError(
+            "Gagal menghitung estimasi token input."
+        )
 
 
 # ============================================================
@@ -426,9 +423,13 @@ def chat(
     request: ChatRequest
 ):
 
-    user_id = request.user_id.strip()
+    user_id = (
+        request.user_id.strip()
+    )
 
-    message = request.message.strip()
+    message = (
+        request.message.strip()
+    )
 
 
     # ========================================================
@@ -439,9 +440,11 @@ def chat(
 
         return {
 
-            "success": False,
+            "success":
+                False,
 
-            "blocked": True,
+            "blocked":
+                True,
 
             "message":
                 "User ID wajib diisi."
@@ -453,9 +456,11 @@ def chat(
 
         return {
 
-            "success": False,
+            "success":
+                False,
 
-            "blocked": True,
+            "blocked":
+                True,
 
             "message":
                 "Pertanyaan wajib diisi."
@@ -464,7 +469,7 @@ def chat(
 
 
     # ========================================================
-    # CURRENT USER USAGE
+    # USER QUOTA
     # ========================================================
 
     used_before = get_used_tokens(
@@ -473,26 +478,24 @@ def chat(
 
 
     remaining_before = max(
-
-        TOKEN_LIMIT
-        - used_before,
-
+        TOKEN_LIMIT - used_before,
         0
-
     )
 
 
     # ========================================================
-    # CHECK QUOTA
+    # QUOTA HABIS
     # ========================================================
 
     if remaining_before <= 0:
 
         return {
 
-            "success": False,
+            "success":
+                False,
 
-            "blocked": True,
+            "blocked":
+                True,
 
             "message":
                 "Quota token user sudah habis.",
@@ -506,6 +509,12 @@ def chat(
                     used_before,
 
                 "remaining_before":
+                    0,
+
+                "estimated_input":
+                    0,
+
+                "max_output_allowed":
                     0
 
             }
@@ -517,15 +526,8 @@ def chat(
     # PINECONE
     # ========================================================
 
-    pinecone_result = (
-        search_pinecone(
-            message
-        )
-    )
-
-
-    context = extract_context(
-        pinecone_result
+    context = search_pinecone(
+        message
     )
 
 
@@ -534,11 +536,8 @@ def chat(
     # ========================================================
 
     prompt = build_prompt(
-
         message,
-
         context
-
     )
 
 
@@ -554,7 +553,7 @@ def chat(
 
 
     # ========================================================
-    # CALCULATE REMAINING
+    # CALCULATE OUTPUT BUDGET
     # ========================================================
 
     remaining_after_input = (
@@ -566,7 +565,7 @@ def chat(
 
 
     # ========================================================
-    # INPUT ALREADY EXCEEDS QUOTA
+    # INPUT SUDAH TERLALU BESAR
     # ========================================================
 
     if remaining_after_input <= 0:
@@ -580,7 +579,7 @@ def chat(
                 True,
 
             "message":
-                "Token tidak cukup untuk memproses input.",
+                "Token tersisa tidak cukup untuk memproses pertanyaan.",
 
             "token": {
 
@@ -597,7 +596,10 @@ def chat(
                     estimated_input,
 
                 "max_output_allowed":
-                    0
+                    0,
+
+                "remaining_after_input":
+                    remaining_after_input
 
             }
 
@@ -605,7 +607,7 @@ def chat(
 
 
     # ========================================================
-    # DYNAMIC OUTPUT TOKEN
+    # DYNAMIC MAX OUTPUT
     # ========================================================
 
     max_output_tokens = (
@@ -619,27 +621,22 @@ def chat(
 
     try:
 
-        response = (
+        response = model.generate_content(
 
-            gemini.models.generate_content(
+            prompt,
 
-                model=MODEL,
+            generation_config={
 
-                contents=prompt,
+                "max_output_tokens":
+                    max_output_tokens,
 
-                config=
-                    types.GenerateContentConfig(
+                "temperature":
+                    0.2
 
-                        max_output_tokens=
-                            max_output_tokens,
-
-                        temperature=0.2
-
-                    )
-
-            )
+            }
 
         )
+
 
     except Exception as error:
 
@@ -666,10 +663,25 @@ def chat(
 
 
     # ========================================================
-    # TOKEN USAGE
+    # GET RESPONSE TEXT
     # ========================================================
 
-    usage = response.usage_metadata
+    try:
+
+        answer = response.text
+
+    except Exception:
+
+        answer = ""
+
+
+    # ========================================================
+    # ACTUAL TOKEN USAGE
+    # ========================================================
+
+    usage = (
+        response.usage_metadata
+    )
 
 
     actual_input = int(
@@ -725,7 +737,7 @@ def chat(
 
 
     # ========================================================
-    # UPDATE USER TOKEN
+    # UPDATE TOKEN
     # ========================================================
 
     add_used_tokens(
@@ -753,7 +765,7 @@ def chat(
 
 
     # ========================================================
-    # RETURN RESPONSE
+    # RESPONSE
     # ========================================================
 
     return {
@@ -765,7 +777,7 @@ def chat(
             False,
 
         "answer":
-            response.text,
+            answer,
 
         "token": {
 

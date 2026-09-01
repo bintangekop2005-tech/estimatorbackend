@@ -2,396 +2,208 @@
 <html lang="id">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>
-        Gemini Token Tracker
-    </title>
-
+    <title>Gemini Token Tracker</title>
 
     <style>
         * {
             box-sizing: border-box;
         }
 
-
         body {
-
             margin: 0;
-
-            font-family:
-                Arial,
-                sans-serif;
-
-            background:
-                #f5f7fb;
-
-            color:
-                #172033;
-
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
         }
-
 
         .container {
-
-            width:
-                min(900px,
-                    calc(100% - 32px));
-
-            margin:
-                40px auto;
-
+            width: 92%;
+            max-width: 900px;
+            margin: 40px auto;
         }
 
-
-        h1 {
-
-            margin-bottom:
-                5px;
-
+        .header {
+            margin-bottom: 24px;
         }
 
-
-        .subtitle {
-
-            color:
-                #667085;
-
-            margin-bottom:
-                25px;
-
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
         }
 
+        .header p {
+            margin: 0;
+            color: #667085;
+        }
 
         .card {
-
-            background:
-                white;
-
-            border:
-                1px solid #e4e7ec;
-
-            border-radius:
-                16px;
-
-            padding:
-                22px;
-
-            margin-bottom:
-                18px;
-
-            box-shadow:
-                0 4px 15px rgba(0,
-                    0,
-                    0,
-                    0.04);
-
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 18px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
         }
-
 
         label {
-
-            display:
-                block;
-
-            font-weight:
-                600;
-
-            font-size:
-                13px;
-
-            margin-bottom:
-                7px;
-
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
-
 
         input,
         textarea {
-
-            width:
-                100%;
-
-            padding:
-                12px;
-
-            border:
-                1px solid #d0d5dd;
-
-            border-radius:
-                10px;
-
-            font:
-                inherit;
-
-            margin-bottom:
-                16px;
-
+            width: 100%;
+            border: 1px solid #d0d5dd;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-family: inherit;
+            font-size: 15px;
+            outline: none;
         }
 
+        input:focus,
+        textarea:focus {
+            border-color: #667085;
+        }
 
         textarea {
-
-            min-height:
-                120px;
-
-            resize:
-                vertical;
-
+            min-height: 120px;
+            resize: vertical;
         }
 
-
-        button {
-
-            width:
-                100%;
-
-            padding:
-                13px;
-
-            border:
-                none;
-
-            border-radius:
-                10px;
-
-            background:
-                #111827;
-
-            color:
-                white;
-
-            font-weight:
-                bold;
-
-            cursor:
-                pointer;
-
+        .button {
+            width: 100%;
+            margin-top: 14px;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            background: #111827;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
         }
 
-
-        button:disabled {
-
-            opacity:
-                0.6;
-
-            cursor:
-                not-allowed;
-
+        .button:hover {
+            background: #1f2937;
         }
 
+        .button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
 
         .metrics {
-
-            display:
-                grid;
-
-            grid-template-columns:
-                repeat(4,
-                    1fr);
-
-            gap:
-                12px;
-
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
         }
-
 
         .metric {
-
-            padding:
-                16px;
-
-            background:
-                #f8fafc;
-
-            border-radius:
-                12px;
-
+            background: #f8fafc;
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            padding: 16px;
         }
 
-
-        .metric-label {
-
-            font-size:
-                12px;
-
-            color:
-                #667085;
-
+        .metric-title {
+            color: #667085;
+            font-size: 12px;
+            font-weight: 600;
         }
-
 
         .metric-value {
-
-            font-size:
-                26px;
-
-            font-weight:
-                bold;
-
-            margin-top:
-                5px;
-
+            margin-top: 6px;
+            font-size: 25px;
+            font-weight: 800;
         }
 
-
-        .remaining {
-
-            margin-top:
-                15px;
-
-            padding:
-                13px;
-
-            border-radius:
-                10px;
-
-            background:
-                #f8fafc;
-
+        .remaining-box {
+            margin-top: 18px;
+            padding: 14px;
+            border-radius: 10px;
+            background: #f8fafc;
+            font-weight: 600;
         }
-
 
         .answer {
-
-            background:
-                #f8fafc;
-
-            border-radius:
-                10px;
-
-            padding:
-                16px;
-
-            min-height:
-                100px;
-
-            white-space:
-                pre-wrap;
-
-            line-height:
-                1.6;
-
+            white-space: pre-wrap;
+            line-height: 1.7;
+            font-size: 15px;
         }
-
 
         .details {
-
-            display:
-                grid;
-
-            grid-template-columns:
-                repeat(2,
-                    1fr);
-
-            gap:
-                10px;
-
+            line-height: 1.9;
+            font-size: 14px;
         }
 
-
-        .detail {
-
-            background:
-                #f8fafc;
-
-            border-radius:
-                10px;
-
-            padding:
-                13px;
-
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #f0f2f5;
+            padding: 7px 0;
         }
 
-
-        .detail span {
-
-            display:
-                block;
-
-            font-size:
-                12px;
-
-            color:
-                #667085;
-
-            margin-bottom:
-                5px;
-
+        .detail-row:last-child {
+            border-bottom: none;
         }
 
-
-        .detail strong {
-
-            font-size:
-                16px;
-
+        .detail-label {
+            color: #667085;
         }
 
+        .detail-value {
+            font-weight: 700;
+        }
 
         .status {
-
-            margin-top:
-                15px;
-
-            padding:
-                12px;
-
-            border-radius:
-                10px;
-
-            background:
-                #f2f4f7;
-
-            font-size:
-                13px;
-
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            background: #f2f4f7;
+            color: #344054;
         }
-
-
-        .success {
-
-            background:
-                #ecfdf3;
-
-            color:
-                #027a48;
-
-        }
-
 
         .error {
-
-            background:
-                #fef3f2;
-
-            color:
-                #b42318;
-
+            background: #fef3f2;
+            color: #b42318;
+            border: 1px solid #fecdca;
         }
 
+        .success {
+            background: #ecfdf3;
+            color: #027a48;
+            border: 1px solid #abefc6;
+        }
 
-        @media(max-width:700px) {
+        .warning {
+            background: #fffaeb;
+            color: #b54708;
+            border: 1px solid #fedf89;
+        }
+
+        @media (max-width: 700px) {
+
+            .container {
+                width: 94%;
+                margin: 25px auto;
+            }
 
             .metrics {
-
-                grid-template-columns:
-                    repeat(2,
-                        1fr);
-
+                grid-template-columns: repeat(2, 1fr);
             }
 
-
-            .details {
-
-                grid-template-columns:
-                    1fr;
-
+            .header h1 {
+                font-size: 25px;
             }
-
         }
     </style>
 
@@ -400,66 +212,58 @@
 
 <body>
 
-
     <div class="container">
 
+        <!-- HEADER -->
 
-        <h1>
-            Gemini Token Tracker
-        </h1>
+        <div class="header">
 
+            <h1>
+                Gemini Token Tracker
+            </h1>
 
-        <div class="subtitle">
-
-            Dynamic output token
-            berdasarkan quota user
+            <p>
+                Dynamic token quota per user
+            </p>
 
         </div>
 
 
-        <!-- CHAT -->
+        <!-- INPUT -->
 
         <div class="card">
 
-            <label>
+            <label for="userId">
                 User ID
             </label>
 
-            <input id="userId" value="user001">
+            <input id="userId" type="text" value="user001" placeholder="Contoh: user001">
 
+            <br><br>
 
-            <label>
-                Pertanyaan
+            <label for="message">
+                Chat
             </label>
 
             <textarea id="message" placeholder="Apa itu teknik industri?"></textarea>
 
-
-            <button id="sendButton" onclick="sendChat()">
-
+            <button id="sendButton" class="button" onclick="sendChat()">
                 Kirim ke Gemini
-
             </button>
 
         </div>
 
 
-        <!-- TOKEN -->
+        <!-- TOKEN METRICS -->
 
         <div class="card">
 
-            <h3>
-                Token Usage
-            </h3>
-
-
             <div class="metrics">
-
 
                 <div class="metric">
 
-                    <div class="metric-label">
-                        Limit
+                    <div class="metric-title">
+                        LIMIT
                     </div>
 
                     <div id="limit" class="metric-value">
@@ -471,8 +275,8 @@
 
                 <div class="metric">
 
-                    <div class="metric-label">
-                        Used
+                    <div class="metric-title">
+                        USED
                     </div>
 
                     <div id="used" class="metric-value">
@@ -484,8 +288,8 @@
 
                 <div class="metric">
 
-                    <div class="metric-label">
-                        Input
+                    <div class="metric-title">
+                        INPUT
                     </div>
 
                     <div id="input" class="metric-value">
@@ -497,8 +301,8 @@
 
                 <div class="metric">
 
-                    <div class="metric-label">
-                        Output
+                    <div class="metric-title">
+                        OUTPUT
                     </div>
 
                     <div id="output" class="metric-value">
@@ -507,31 +311,17 @@
 
                 </div>
 
-
             </div>
 
 
-            <div id="remaining" class="remaining">
-
-                Remaining:
-                <strong>
-                    100
-                </strong>
-                tokens
-
-            </div>
-
-
-            <div id="status" class="status">
-
-                Ready
-
+            <div id="remainingBox" class="remaining-box">
+                Remaining: 100 tokens
             </div>
 
         </div>
 
 
-        <!-- ANSWER -->
+        <!-- AI ANSWER -->
 
         <div class="card">
 
@@ -539,17 +329,14 @@
                 AI Response
             </h3>
 
-
             <div id="answer" class="answer">
-
                 Belum ada jawaban.
-
             </div>
 
         </div>
 
 
-        <!-- DETAILS -->
+        <!-- TOKEN DETAILS -->
 
         <div class="card">
 
@@ -557,87 +344,17 @@
                 Token Details
             </h3>
 
+            <div id="details" class="details">
 
-            <div class="details">
-
-
-                <div class="detail">
-
-                    <span>
+                <div class="detail-row">
+                    <span class="detail-label">
                         Estimated Input
                     </span>
 
-                    <strong id="estimatedInput">
+                    <span class="detail-value">
                         0
-                    </strong>
-
-                </div>
-
-
-                <div class="detail">
-
-                    <span>
-                        Max Output Allowed
                     </span>
-
-                    <strong id="maxOutput">
-                        0
-                    </strong>
-
                 </div>
-
-
-                <div class="detail">
-
-                    <span>
-                        Actual Input
-                    </span>
-
-                    <strong id="actualInput">
-                        0
-                    </strong>
-
-                </div>
-
-
-                <div class="detail">
-
-                    <span>
-                        Actual Output
-                    </span>
-
-                    <strong id="actualOutput">
-                        0
-                    </strong>
-
-                </div>
-
-
-                <div class="detail">
-
-                    <span>
-                        Actual Total
-                    </span>
-
-                    <strong id="actualTotal">
-                        0
-                    </strong>
-
-                </div>
-
-
-                <div class="detail">
-
-                    <span>
-                        Remaining After
-                    </span>
-
-                    <strong id="remainingAfter">
-                        100
-                    </strong>
-
-                </div>
-
 
             </div>
 
@@ -650,44 +367,39 @@
     <script>
 
 
-        async function sendChat() {
+        // ============================================================
+        // SEND CHAT
+        // ============================================================
 
+        async function sendChat() {
 
             const userId =
                 document
-                    .getElementById(
-                        "userId"
-                    )
+                    .getElementById("userId")
                     .value
                     .trim();
 
 
             const message =
                 document
-                    .getElementById(
-                        "message"
-                    )
+                    .getElementById("message")
                     .value
                     .trim();
 
 
             const button =
-                document.getElementById(
-                    "sendButton"
-                );
+                document
+                    .getElementById("sendButton");
 
 
             const answer =
-                document.getElementById(
-                    "answer"
-                );
+                document
+                    .getElementById("answer");
 
 
-            const status =
-                document.getElementById(
-                    "status"
-                );
-
+            // --------------------------------------------------------
+            // VALIDATION
+            // --------------------------------------------------------
 
             if (!userId) {
 
@@ -696,209 +408,188 @@
                 );
 
                 return;
-
             }
 
 
             if (!message) {
 
                 alert(
-                    "Pertanyaan wajib diisi."
+                    "Chat wajib diisi."
                 );
 
                 return;
-
             }
 
 
-            button.disabled =
-                true;
+            // --------------------------------------------------------
+            // LOADING
+            // --------------------------------------------------------
 
+            button.disabled = true;
 
             button.innerText =
                 "Processing...";
 
 
             answer.innerText =
-                "Menghitung token...";
-
-
-            status.className =
-                "status";
-
-
-            status.innerText =
-                "Processing request...";
+                "Gemini sedang memproses...";
 
 
             try {
 
+                // ----------------------------------------------------
+                // REQUEST
+                // ----------------------------------------------------
 
                 const response =
                     await fetch(
                         "/api/chat",
                         {
 
-                            method:
-                                "POST",
+                            method: "POST",
 
                             headers: {
-
                                 "Content-Type":
                                     "application/json"
-
                             },
 
-                            body:
-                                JSON.stringify({
+                            body: JSON.stringify({
 
-                                    user_id:
-                                        userId,
+                                user_id:
+                                    userId,
 
-                                    message:
-                                        message
+                                message:
+                                    message
 
-                                })
+                            })
 
                         }
                     );
 
 
-                /*
-                 * Baca sebagai text terlebih dahulu
-                 * agar error Vercel tidak menghasilkan
-                 * "Unexpected token A".
-                 */
+                // ----------------------------------------------------
+                // READ RESPONSE SAFELY
+                // ----------------------------------------------------
 
-                const raw =
-                    await response.text();
+                const contentType =
+                    response.headers.get(
+                        "content-type"
+                    );
 
 
                 let data;
 
 
-                try {
+                if (
+                    contentType &&
+                    contentType.includes(
+                        "application/json"
+                    )
+                ) {
 
                     data =
-                        JSON.parse(
-                            raw
-                        );
+                        await response.json();
 
-                }
+                } else {
 
-                catch {
+                    const text =
+                        await response.text();
 
                     throw new Error(
-
-                        "Server tidak mengembalikan JSON.\n\n" +
-
-                        "HTTP " +
-                        response.status +
-
-                        "\n\n" +
-
-                        raw
-
+                        text ||
+                        `HTTP ${response.status}`
                     );
 
                 }
 
+
+                // ----------------------------------------------------
+                // ERROR
+                // ----------------------------------------------------
 
                 if (!response.ok) {
 
                     throw new Error(
-
-                        data.detail ||
-
                         data.message ||
-
+                        data.detail ||
                         "Server error"
-
                     );
 
                 }
 
 
-                /*
-                 * QUOTA BLOCKED
-                 */
+                // ----------------------------------------------------
+                // BLOCKED
+                // ----------------------------------------------------
 
                 if (data.blocked) {
 
-
                     answer.innerText =
-                        data.message;
+                        data.message ||
+                        "Request diblokir.";
 
+                    answer.className =
+                        "answer warning";
+
+
+                    if (data.token) {
+
+                        updateMetrics(
+                            data.token
+                        );
+
+                    }
+
+                    return;
+                }
+
+
+                // ----------------------------------------------------
+                // SUCCESS
+                // ----------------------------------------------------
+
+                answer.className =
+                    "answer";
+
+
+                answer.innerText =
+                    data.answer ||
+                    "Gemini tidak memberikan jawaban.";
+
+
+                if (data.token) {
 
                     updateMetrics(
                         data.token
                     );
 
-
-                    status.className =
-                        "status error";
-
-
-                    status.innerText =
-                        "Request diblokir.";
-
-
-                    return;
-
                 }
-
-
-                /*
-                 * SUCCESS
-                 */
-
-                answer.innerText =
-                    data.answer;
-
-
-                updateMetrics(
-                    data.token
-                );
-
-
-                status.className =
-                    "status success";
-
-
-                status.innerText =
-                    "Request berhasil.";
 
             }
 
 
             catch (error) {
 
-
                 console.error(
                     error
                 );
 
 
+                answer.className =
+                    "answer error";
+
+
                 answer.innerText =
+                    "Error: " +
                     error.message;
-
-
-                status.className =
-                    "status error";
-
-
-                status.innerText =
-                    "Request gagal.";
 
             }
 
 
             finally {
 
-
                 button.disabled =
                     false;
-
 
                 button.innerText =
                     "Kirim ke Gemini";
@@ -908,159 +599,186 @@
         }
 
 
-        /* ============================================================
-           UPDATE TOKEN UI
-           ============================================================ */
+        // ============================================================
+        // UPDATE METRICS
+        // ============================================================
 
-        function updateMetrics(
-            token
-        ) {
+        function updateMetrics(token) {
 
 
-            if (!token) {
-
-                return;
-
-            }
+            const limit =
+                token.limit ?? 100;
 
 
-            document
-                .getElementById(
-                    "limit"
-                )
-                .innerText =
-                token.limit ?? 0;
-
-
-            document
-                .getElementById(
-                    "used"
-                )
-                .innerText =
-
+            const used =
                 token.used_after ??
-
                 token.used_before ??
-
                 0;
 
 
-            document
-                .getElementById(
-                    "input"
-                )
-                .innerText =
-
+            const input =
                 token.actual_input ??
-
                 token.estimated_input ??
-
                 0;
 
 
-            document
-                .getElementById(
-                    "output"
-                )
-                .innerText =
-
+            const output =
                 token.actual_output ??
-
                 0;
 
 
-            document
-                .getElementById(
-                    "remaining"
-                )
-                .innerHTML =
-
-                "Remaining: <strong>" +
-
-                (
-                    token.remaining_after ??
-
-                    token.remaining_before ??
-
-                    0
-                )
-
-                +
-
-                "</strong> tokens";
-
-
-            document
-                .getElementById(
-                    "estimatedInput"
-                )
-                .innerText =
-
-                token.estimated_input ??
-
-                0;
-
-
-            document
-                .getElementById(
-                    "maxOutput"
-                )
-                .innerText =
-
-                token.max_output_allowed ??
-
-                0;
-
-
-            document
-                .getElementById(
-                    "actualInput"
-                )
-                .innerText =
-
-                token.actual_input ??
-
-                0;
-
-
-            document
-                .getElementById(
-                    "actualOutput"
-                )
-                .innerText =
-
-                token.actual_output ??
-
-                0;
-
-
-            document
-                .getElementById(
-                    "actualTotal"
-                )
-                .innerText =
-
-                token.actual_total ??
-
-                0;
-
-
-            document
-                .getElementById(
-                    "remainingAfter"
-                )
-                .innerText =
-
+            const remaining =
                 token.remaining_after ??
-
                 token.remaining_before ??
-
                 0;
+
+
+            // --------------------------------------------------------
+            // TOP METRICS
+            // --------------------------------------------------------
+
+            document
+                .getElementById("limit")
+                .innerText =
+                limit;
+
+
+            document
+                .getElementById("used")
+                .innerText =
+                used;
+
+
+            document
+                .getElementById("input")
+                .innerText =
+                input;
+
+
+            document
+                .getElementById("output")
+                .innerText =
+                output;
+
+
+            // --------------------------------------------------------
+            // REMAINING
+            // --------------------------------------------------------
+
+            document
+                .getElementById("remainingBox")
+                .innerText =
+                "Remaining: " +
+                remaining +
+                " tokens";
+
+
+            // --------------------------------------------------------
+            // TOKEN DETAILS
+            // --------------------------------------------------------
+
+            document
+                .getElementById("details")
+                .innerHTML = `
+
+            <div class="detail-row">
+
+                <span class="detail-label">
+                    Estimated Input
+                </span>
+
+                <span class="detail-value">
+                    ${token.estimated_input ?? 0}
+                </span>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span class="detail-label">
+                    Max Output Allowed
+                </span>
+
+                <span class="detail-value">
+                    ${token.max_output_allowed ?? 0}
+                </span>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span class="detail-label">
+                    Actual Input
+                </span>
+
+                <span class="detail-value">
+                    ${token.actual_input ?? 0}
+                </span>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span class="detail-label">
+                    Actual Output
+                </span>
+
+                <span class="detail-value">
+                    ${token.actual_output ?? 0}
+                </span>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span class="detail-label">
+                    Actual Total
+                </span>
+
+                <span class="detail-value">
+                    ${token.actual_total ?? 0}
+                </span>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span class="detail-label">
+                    Used After
+                </span>
+
+                <span class="detail-value">
+                    ${token.used_after ?? 0}
+                </span>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span class="detail-label">
+                    Remaining
+                </span>
+
+                <span class="detail-value">
+                    ${token.remaining_after ??
+                token.remaining_before ??
+                0}
+                </span>
+
+            </div>
+
+        `;
 
         }
 
-    </script>
 
+    </script>
 
 </body>
 

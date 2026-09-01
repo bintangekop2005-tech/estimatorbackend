@@ -3,3 +3,4 @@ pydantic
 google-generativeai
 pinecone
 uvicorn[standard]
+python-dotenv
