@@ -28,6 +28,9 @@
 
         .header {
             margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
         }
 
         .header h1 {
@@ -97,6 +100,21 @@
         .button:disabled {
             background: #9ca3af;
             cursor: not-allowed;
+        }
+
+        .button-secondary {
+            background: transparent;
+            color: #b42318;
+            border: 1px solid #fecdca;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .button-secondary:hover {
+            background: #fef3f2;
         }
 
         .metrics {
@@ -204,6 +222,12 @@
             .header h1 {
                 font-size: 25px;
             }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
         }
     </style>
 
@@ -217,14 +241,20 @@
         <!-- HEADER -->
 
         <div class="header">
+            <div>
+                <h1>
+                    Gemini Token Tracker
+                </h1>
 
-            <h1>
-                Gemini Token Tracker
-            </h1>
+                <p>
+                    Dynamic token quota per user
+                </p>
+            </div>
 
-            <p>
-                Dynamic token quota per user
-            </p>
+            <!-- Tombol ini untuk testing: reset quota user tanpa redeploy -->
+            <button class="button-secondary" onclick="resetQuota()">
+                Reset Quota (Testing)
+            </button>
 
         </div>
 
@@ -365,6 +395,58 @@
 
 
     <script>
+
+        // ============================================================
+        // RESET QUOTA (untuk testing, panggil endpoint /api/reset/{user_id})
+        // ============================================================
+
+        async function resetQuota() {
+
+            const userId =
+                document
+                    .getElementById("userId")
+                    .value
+                    .trim();
+
+            if (!userId) {
+                alert("User ID wajib diisi.");
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/api/reset/${encodeURIComponent(userId)}`,
+                        { method: "POST" }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message || "Gagal reset quota."
+                    );
+                }
+
+                document.getElementById("limit").innerText = data.limit;
+                document.getElementById("used").innerText = data.used;
+                document.getElementById("input").innerText = 0;
+                document.getElementById("output").innerText = 0;
+
+                document.getElementById("remainingBox").innerText =
+                    "Remaining: " + data.remaining + " tokens";
+
+                document.getElementById("answer").className = "answer success";
+                document.getElementById("answer").innerText =
+                    `Quota untuk '${userId}' berhasil di-reset.`;
+
+            } catch (error) {
+                console.error(error);
+                alert("Error: " + error.message);
+            }
+        }
 
 
         // ============================================================
@@ -736,7 +818,20 @@
             <div class="detail-row">
 
                 <span class="detail-label">
-                    Actual Total
+                    Thinking Tokens (tidak dihitung ke quota)
+                </span>
+
+                <span class="detail-value">
+                    ${token.thinking_tokens ?? 0}
+                </span>
+
+            </div>
+
+
+            <div class="detail-row">
+
+                <span class="detail-label">
+                    Actual Total (dipakai untuk quota)
                 </span>
 
                 <span class="detail-value">
